@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appraisal Refund Support - Octane Prototype</title>
+    <style>
+        :root {
+            --sapphire: #0D2552;
+            --torque: #1296B0;
+            --blaze: #FBAF40;
+            --poppy: #F04E3E;
+            --slate: #58585B;
+            --offwhite: #F5F6F7;
+            --medgrey: #D4D9DB;
+            --body-bg: #e8eaed;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; background: var(--body-bg); color: var(--slate); padding-bottom: 52px; }
+        .prototype-nav {
+            background: #2d2d2d; color: #fff; padding: 8px 16px; display: flex; align-items: center; gap: 12px;
+        }
+        .prototype-nav span { font-weight: bold; margin-right: 8px; }
+        .prototype-nav button {
+            padding: 6px 12px; border: 1px solid #555; background: #444; color: #fff; cursor: pointer; border-radius: 4px; font-size: 11px;
+        }
+        .prototype-nav button.active { background: var(--torque); border-color: var(--torque); }
+        .prototype-nav button:hover { background: #555; }
+        .top-header {
+            background: var(--sapphire); color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .logo { font-weight: bold; font-size: 18px; }
+        .logo span { color: var(--torque); }
+        .context-ribbon { background: #fff; border-bottom: 1px solid var(--medgrey); padding: 8px 20px; font-size: 11px; color: var(--sapphire); }
+        .main-layout { display: flex; min-height: calc(100vh - 140px); }
+        .sidebar { width: 150px; background: #fff; border-right: 1px solid var(--medgrey); padding: 16px 0; flex-shrink: 0; }
+        .sidebar a { display: block; padding: 8px 12px; color: var(--slate); text-decoration: none; }
+        .sidebar a.active { color: #fff; font-weight: 600; background: var(--torque); }
+        .sidebar a:hover { background: var(--offwhite); }
+        .content-area { flex: 1; padding: 12px; background: #fff; margin: 12px; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: auto; }
+        .content-area.screen { display: none; }
+        .content-area.screen.active { display: block; }
+        .section-title { background: var(--offwhite); color: var(--sapphire); padding: 8px 12px; margin: -12px -12px 12px -12px; font-weight: bold; font-size: 11px; border-bottom: 1px solid var(--medgrey); border-radius: 3px 3px 0 0; }
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--medgrey); margin-bottom: 16px; }
+        .tabs a { padding: 10px 16px; color: var(--slate); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tabs a.active { color: var(--sapphire); border-bottom-color: var(--torque); font-weight: bold; }
+        .field-row { display: flex; align-items: flex-start; margin-bottom: 6px; }
+        .field-label { width: 180px; text-align: right; padding-right: 10px; color: var(--slate); font-size: 11px; flex-shrink: 0; }
+        .field-value { flex: 1; color: var(--sapphire); font-size: 11px; }
+        .field-value input { padding: 4px 8px; border: 1px solid var(--medgrey); border-radius: 3px; width: 160px; font-size: 11px; }
+        .note-box { background: var(--offwhite); border-left: 4px solid var(--torque); padding: 10px 12px; margin: 12px 0; font-size: 11px; color: var(--sapphire); border-radius: 3px; }
+        .refund-due-header { background: var(--offwhite); border-left: 4px solid var(--blaze); padding: 10px 12px; margin-bottom: 16px; border-radius: 3px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .refund-due-header strong { color: var(--sapphire); font-size: 14px; }
+        .refund-due-header .refund-due-value { margin-left: auto; }
+        .use-refund-block { display: none; }
+        .use-refund-block.visible { display: block; }
+        .invoice-item-list { margin: 8px 0; padding-left: 0; list-style: none; }
+        .invoice-item-list li { padding: 6px 0; border-bottom: 1px solid var(--offwhite); font-size: 11px; color: var(--sapphire); }
+        .invoice-item-list li:last-of-type { border-bottom: none; }
+        .total-invoice-amount { font-weight: bold; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--medgrey); }
+        table.data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 11px; }
+        table.data-table th { background: var(--offwhite); color: var(--sapphire); padding: 8px 10px; text-align: left; font-weight: bold; }
+        table.data-table td { padding: 8px 10px; border-bottom: 1px solid var(--offwhite); }
+        table.data-table td a { color: var(--torque); text-decoration: none; }
+        .btn { padding: 8px 18px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-primary { background: var(--torque); color: #fff; }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-secondary { background: #6c757d; color: #fff; }
+        .btn-secondary:hover { filter: brightness(1.05); }
+        .toast { position: fixed; bottom: 60px; left: 180px; background: var(--sapphire); color: #fff; padding: 12px 20px; border-radius: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 1000; }
+        .toast.show { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .payment-type-new { border-left: 3px solid var(--torque); padding-left: 8px; }
+        .field-row-highlight { background: rgba(18, 150, 176, 0.08); padding: 8px; margin: 6px -12px; border-radius: 3px; border-left: 3px solid var(--torque); }
+        .breadcrumb { font-size: 13px; color: var(--slate); margin-bottom: 12px; }
+        .breadcrumb a { color: var(--torque); text-decoration: none; }
+        .action-bar { position: fixed; bottom: 0; left: 150px; right: 0; background: #f0f2f4; border-top: 1px solid var(--medgrey); padding: 10px 20px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; z-index: 100; }
+    </style>
+</head>
+<body>
+    <div class="prototype-nav">
+        <span>PROTOTYPE:</span>
+        <button class="active" onclick="showScreen('screen1')">1. Appraisal Details (Appraisal Invoice Amount)</button>
+        <button onclick="showScreen('screen2')">2. Invoices List (Refund Due in header)</button>
+        <button onclick="showScreen('screen3')">3. 1004D Invoice – Apply from Refund Due</button>
+    </div>
+
+    <div class="top-header">
+        <div class="logo"><span>O</span>ctane</div>
+        <span>|</span>
+        <span>Alice Heimir — 1234 Test Loan Way — Anytown, TX 12345</span>
+        <span style="margin-left: auto;">Loan No. 1402215754</span>
+    </div>
+
+    <div class="context-ribbon">
+        Task: Obtain Recorded Documents — Type: Wait — Assignee Casey Freeman
+    </div>
+
+    <div class="main-layout">
+        <div class="sidebar">
+            <a href="#">Overview</a>
+            <a href="#">Activity</a>
+            <a href="#" id="navCharges">Charges & Credits</a>
+            <a href="#" id="navAppraisal" class="active">Appraisals</a>
+            <a href="#">Documents</a>
+        </div>
+
+        <!-- Screen 1: Appraisal > Details — Appraisal section with Appraisal Invoice Amount -->
+        <div class="content-area screen active" id="screen1">
+            <div class="breadcrumb"><a href="#">Loan</a> &gt; <a href="#">Appraisals</a> &gt; Appraisal 1 (FHA)</div>
+            <div class="tabs">
+                <a href="#" class="active">Details</a>
+                <a href="#">Documents</a>
+            </div>
+            <div class="section-title">Appraisal</div>
+            <div class="field-row">
+                <div class="field-label">Appraisal Instance</div>
+                <div class="field-value">First Appraisal</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Decision Appraisal</div>
+                <div class="field-value">No</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Inspection Date</div>
+                <div class="field-value">10/16/25</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Effective Date</div>
+                <div class="field-value">10/16/25</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Appraised Value</div>
+                <div class="field-value">$435,000.00</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">LCA Risk Score</div>
+                <div class="field-value"><input type="text" placeholder=""></div>
+            </div>
+            <div class="field-row field-row-highlight">
+                <div class="field-label">Appraisal Invoice Amount</div>
+                <div class="field-value">
+                    <input type="text" value="350.00" id="appraisalInvoiceAmount">
+                    <span style="margin-left: 8px; font-size: 10px; color: var(--slate);">(user-editable or set by Doc Intelligence)</span>
+                </div>
+            </div>
+            <div class="note-box">
+                <strong>Note:</strong> Doc Intelligence can have AI set this field automatically by scraping the appraisal invoice document and reverse merging the amount. For the time being, it can also be <strong>user-set</strong>.
+            </div>
+            <div class="section-title" style="margin-top: 24px;">Property Details</div>
+            <div class="field-row"><div class="field-label">Sale Price</div><div class="field-value">—</div></div>
+        </div>
+
+        <!-- Screen 2: Charges & Credits > Invoices — list with Refund Due in header -->
+        <div class="content-area screen" id="screen2">
+            <div class="breadcrumb"><a href="#">Loan</a> &gt; Charges & Credits</div>
+            <div class="tabs">
+                <a href="#">Charges</a>
+                <a href="#">Recording</a>
+                <a href="#">Invoices</a>
+                <a href="#" class="active">Invoices</a>
+            </div>
+            <div class="refund-due-header">
+                <span style="font-size: 11px; color: var(--slate);">(Appraisal charges collected − Appraisal Invoice Amount; from custom calc)</span>
+                <span class="refund-due-value"><strong>Invoice Refund Due:</strong> <strong>$150.00</strong></span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Payer Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="#" onclick="showScreen('screen3'); return false;">Appraisal Fees for 1234 Test Loan Way</a></td>
+                        <td>Appraisal Fee $1,000.00, Appraisal Fee - Final Inspection $250.00</td>
+                        <td>$1,250.00</td>
+                        <td>Borrower</td>
+                        <td>Refunded $500.00 10/09/25</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#" onclick="showScreen('screen3'); return false;">Appraisal – Second Review (1004D)</a></td>
+                        <td>Appraisal Fee - 1004D $150.00</td>
+                        <td>$150.00</td>
+                        <td>Borrower</td>
+                        <td>Unpaid</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Screen 3: Invoice drill-down — 1004D with Payment section, Refund Due Amount Available, Remaining Invoice Amount -->
+        <div class="content-area screen" id="screen3">
+            <div class="breadcrumb"><a href="#">Loan</a> &gt; <a href="#">Charges & Credits</a> &gt; <a href="#" onclick="showScreen('screen2'); return false;">Invoices</a> &gt; Appraisal – Second Review (1004D)</div>
+            <div class="section-title">Details</div>
+            <div class="field-row">
+                <div class="field-label">Invoice</div>
+                <div class="field-value">Appraisal – Second Review (1004D)</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Status</div>
+                <div class="field-value">Unpaid</div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Internal Notes</div>
+                <div class="field-value"><input type="text" placeholder="" style="width: 100%; max-width: 400px;"></div>
+            </div>
+            <div class="section-title" style="margin-top: 24px;">Item</div>
+            <ul class="invoice-item-list">
+                <li>Appraisal Fee - 1004D: $150.00</li>
+            </ul>
+            <div class="field-row total-invoice-amount">
+                <div class="field-label">Total Invoice Amount</div>
+                <div class="field-value"><strong>$150.00</strong></div>
+            </div>
+            <div class="section-title" style="margin-top: 24px;">Payment</div>
+            <div class="field-row" style="margin-bottom: 10px;">
+                <div class="field-label">
+                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; text-align: left; width: auto;">
+                        <input type="checkbox" id="useRefundDue" checked>
+                        <span>Apply from refund due</span>
+                    </label>
+                </div>
+                <div class="field-value">
+                    <span style="font-size: 10px; color: var(--slate);">($150.00 available)</span>
+                </div>
+            </div>
+            <div class="use-refund-block visible" id="useRefundBlock">
+                <div class="field-row">
+                    <div class="field-label">Amount</div>
+                    <div class="field-value">
+                        <input type="text" id="amountToApply" value="150.00" style="width: 80px; padding: 4px 8px; border: 1px solid var(--medgrey); border-radius: 3px; font-size: 11px;"> <span style="font-size: 10px; color: var(--slate);">(max $150.00)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field-label">Remaining invoice amount</div>
+                <div class="field-value" id="remainingAmountValue"><strong>$0.00</strong></div>
+            </div>
+            <div class="field-row">
+                    <div class="field-label">Payment Type</div>
+                    <div class="field-value">
+                        <select id="paymentType" style="padding: 4px 8px; min-width: 220px; border: 1px solid var(--medgrey); border-radius: 3px; font-size: 11px;">
+                            <option>Credit/Debit Card</option>
+                            <option>Check</option>
+                            <option>Wire Transfer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Payer Name</div>
+                    <div class="field-value">Alice Heimir</div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Payment Date</div>
+                    <div class="field-value"><input type="text" value="" placeholder="mm/dd/yyyy" style="width: 100px; padding: 4px 8px; border: 1px solid var(--medgrey); border-radius: 3px; font-size: 11px;"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Payment Method</div>
+                    <div class="field-value">
+                        <select style="padding: 4px 8px; min-width: 220px; border: 1px solid var(--medgrey); border-radius: 3px; font-size: 11px;">
+                            <option>Borrower Dashboard</option>
+                            <option>Manual Entry</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Receipt Email</div>
+                    <div class="field-value"><input type="text" value="" placeholder="email@example.com" style="width: 220px; padding: 4px 8px; border: 1px solid var(--medgrey); border-radius: 3px; font-size: 11px;"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">Charge ID</div>
+                    <div class="field-value"><input type="text" value="" placeholder="" style="width: 220px; padding: 4px 8px; border: 1px solid var(--medgrey); border-radius: 3px; font-size: 11px;"></div>
+                </div>
+        </div>
+    </div>
+
+    <!-- Footer Action Buttons (Octane: fixed bottom left) -->
+    <div class="action-bar" id="actionBar">
+        <button class="btn btn-primary" id="actionPrimary">Save</button>
+        <button class="btn btn-secondary" id="actionSecondary">Cancel</button>
+    </div>
+
+    <div class="toast" id="toast">Payment applied. $150.00 from Invoice Refund Due applied to 1004D invoice.</div>
+
+    <script>
+        function showScreen(id) {
+            document.querySelectorAll('.content-area.screen').forEach(function(el) { el.classList.remove('active'); });
+            document.querySelectorAll('.prototype-nav button').forEach(function(el) { el.classList.remove('active'); });
+            document.getElementById(id).classList.add('active');
+            var navApp = document.getElementById('navAppraisal');
+            var navChg = document.getElementById('navCharges');
+            if (id === 'screen1') { navApp.classList.add('active'); navChg.classList.remove('active'); } else { navApp.classList.remove('active'); navChg.classList.add('active'); }
+            var idx = { screen1: 0, screen2: 1, screen3: 2 }[id];
+            var btns = document.querySelectorAll('.prototype-nav button');
+            if (btns[idx]) btns[idx].classList.add('active');
+            updateActionBar(id);
+            if (id === 'screen3') updatePaymentSection();
+        }
+        function updatePaymentSection() {
+            var useRefund = document.getElementById('useRefundDue');
+            var useBlock = document.getElementById('useRefundBlock');
+            var amountInput = document.getElementById('amountToApply');
+            var remainingEl = document.getElementById('remainingAmountValue');
+            if (!useRefund || !remainingEl) return;
+            var isChecked = useRefund.checked;
+            useBlock.classList.toggle('visible', isChecked);
+            var totalInvoice = 150;
+            var applied = isChecked ? (parseFloat(amountInput.value) || 0) : 0;
+            var remaining = Math.max(0, totalInvoice - applied);
+            remainingEl.innerHTML = '<strong>$' + remaining.toFixed(2) + '</strong>';
+        }
+        function updateActionBar(screenId) {
+            var primary = document.getElementById('actionPrimary');
+            var secondary = document.getElementById('actionSecondary');
+            primary.onclick = null;
+            secondary.onclick = null;
+            if (screenId === 'screen1') {
+                primary.textContent = 'Save';
+                secondary.textContent = 'Cancel';
+                secondary.style.display = '';
+            } else if (screenId === 'screen2') {
+                primary.textContent = 'Add Invoice';
+                secondary.textContent = 'Force Update';
+                secondary.style.display = '';
+            } else {
+                primary.textContent = 'Apply payment';
+                secondary.textContent = 'Back to Invoices';
+                secondary.style.display = '';
+                primary.onclick = showToast;
+                secondary.onclick = function() { showScreen('screen2'); };
+            }
+        }
+        function showToast() {
+            var t = document.getElementById('toast');
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 3000);
+        }
+        updateActionBar('screen1');
+        var cbRefund = document.getElementById('useRefundDue');
+        var inputApply = document.getElementById('amountToApply');
+        if (cbRefund) cbRefund.addEventListener('change', updatePaymentSection);
+        if (inputApply) inputApply.addEventListener('input', updatePaymentSection);
+    </script>
+</body>
+</html>
