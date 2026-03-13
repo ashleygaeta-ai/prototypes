@@ -23,6 +23,30 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: "Segoe UI", Helvetica Neue, Arial, sans-serif; font-size: 12px; background: var(--body-bg); color: var(--slate); }
 
+/* ── GLOBAL TOP NAV ────────────────────────── */
+.global-nav {
+  background: var(--sapphire);
+  color: #fff;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  height: 38px;
+  gap: 0;
+  font-size: 12px;
+}
+.global-nav .logo { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.5px; margin-right: 20px; }
+.global-nav .logo span { color: var(--teal); }
+.global-nav .nav-links { display: flex; align-items: center; gap: 0; flex: 1; }
+.global-nav .nav-link { color: rgba(255,255,255,0.85); padding: 0 12px; height: 38px; display: flex; align-items: center; cursor: pointer; font-size: 12px; border-right: 1px solid rgba(255,255,255,0.12); }
+.global-nav .nav-link:first-child { border-left: 1px solid rgba(255,255,255,0.12); }
+.global-nav .nav-link:hover { background: rgba(255,255,255,0.08); }
+.global-nav .search-bar { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.global-nav .search-input { height: 26px; width: 200px; border: none; border-radius: 3px; padding: 0 8px; font-size: 12px; }
+.global-nav .search-btn { background: var(--teal); border: none; color: #fff; height: 26px; width: 26px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+.global-nav .user-info { color: #fff; font-size: 12px; margin-left: 12px; white-space: nowrap; }
+.global-nav .user-info span { color: var(--blaze); font-weight: 700; }
+.notice-badge { background: var(--poppy); color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: inline-flex; align-items: center; justify-content: center; margin-left: 2px; font-weight: 700; }
+
 /* ── PROTO NAV ─────────────────────────────── */
 #proto-nav {
   background: #222;
@@ -817,27 +841,62 @@ body { font-family: "Segoe UI", Helvetica Neue, Arial, sans-serif; font-size: 12
 
 
 <!-- ════════════════════════════════════════════
-     S5 — Contractor Admin (Company-Wide)
+     S5 — Contractor Admin (Company-Wide) — matches screenshot exactly
 ═════════════════════════════════════════════════ -->
-<div id="s5" class="screen">
-  <div class="body-split" style="min-height:calc(100vh - 32px);">
-    <div class="left-nav">
-      <div class="ca-sidebar-hdr"><span style="color:var(--teal); font-weight:700;">◀</span> Contractor Admin</div>
-      <div class="left-nav-item active">Contractors</div>
+<div id="s5" class="screen" style="flex-direction:column;">
+  <!-- Global top nav -->
+  <div class="global-nav">
+    <div class="logo">🅾 <span>ctane</span></div>
+    <div class="nav-links">
+      <div class="nav-link">Support</div>
+      <div class="nav-link">Announcements</div>
+      <div class="nav-link">Notices <span class="notice-badge">0</span></div>
+      <div class="nav-link">Recent ▾</div>
     </div>
-    <div class="main-content">
-      <div class="breadcrumb">
-        <a>Contractors</a><span class="sep">›</span><span class="current">Test Gaeta Contracting — Joseph GaetaTEST</span>
+    <div class="search-bar">
+      <input class="search-input" placeholder="Loan Search">
+      <button class="search-btn">🔍</button>
+    </div>
+    <div class="user-info">Ashley R. <span>Gaeta</span></div>
+  </div>
+
+  <div class="body-split" style="flex:1;">
+    <!-- CA Sidebar -->
+    <div class="left-nav" style="width:170px; min-width:170px;">
+      <div class="ca-sidebar-hdr" style="background:var(--teal); color:#fff; font-size:12px;">
+        <span style="font-size:14px; margin-right:4px;">◀</span> CONTRACTOR ADMIN
       </div>
-      <div class="content-card">
-        <div class="card-section-header">General</div>
+      <div class="left-nav-item active" style="font-size:13px; padding:10px 16px;">Contractors</div>
+    </div>
+
+    <!-- Main area -->
+    <div class="main-content" style="background:#f0f2f4;">
+      <div class="breadcrumb" style="background:#fff; border-bottom:1px solid var(--divider); padding:12px 20px; font-size:14px;">
+        <a>Contractors</a><span class="sep" style="margin:0 8px;">›</span>
+        <span class="current">Joseph GaetaTEST (Test Gaeta Contracting)</span>
+      </div>
+
+      <!-- Tabs -->
+      <div style="background:#fff; border-bottom:1px solid var(--divider); padding:0 20px; display:flex; gap:0;">
+        <div style="padding:10px 16px; font-size:13px; font-weight:700; color:var(--navy); border-bottom:3px solid var(--teal); cursor:pointer;">Contractor</div>
+        <div style="padding:10px 16px; font-size:13px; color:var(--slate); cursor:pointer; border-left:1px solid var(--divider);">Licenses</div>
+        <div style="padding:10px 16px; font-size:13px; color:var(--slate); cursor:pointer; border-left:1px solid var(--divider);">Files</div>
+        <div style="padding:10px 16px; font-size:13px; color:var(--slate); cursor:pointer; border-left:1px solid var(--divider);">Notes</div>
+      </div>
+
+      <!-- Form content card -->
+      <div style="background:#fff; margin:10px; border:1px solid var(--divider); border-radius:2px; padding:20px 30px 0;">
         <div class="form-table">
           <div class="form-row">
-            <div class="label-cell">Contractor Company Name <span class="req">*</span></div>
-            <div class="value-cell"><input class="inline-input" value="Test Gaeta Contracting"></div>
+            <div class="label-cell">Contractor Legal<br>Company Name <span class="req">*</span></div>
+            <div class="value-cell"><input class="inline-input" style="width:200px; border-color:var(--teal);" value="Test Gaeta Contracting"></div>
           </div>
           <div class="form-row">
-            <div class="label-cell">Verified <span class="help-q">?</span></div>
+            <div class="label-cell">Nickname <span class="help-q">?</span></div>
+            <div class="value-cell"><input class="inline-input" style="width:200px;" value=""></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Verified <span class="req">*</span> <span class="help-q">?</span></div>
             <div class="value-cell"><div class="toggle-pair"><button class="on" onclick="tog(this)">Yes</button><button onclick="tog(this)">No</button></div></div>
           </div>
           <div class="form-row">
@@ -846,66 +905,114 @@ body { font-family: "Segoe UI", Helvetica Neue, Arial, sans-serif; font-size: 12
               <div class="inline-select-wrap">
                 <select id="co-validation" onchange="toggleCompanyDenialReason(this)">
                   <option>Pending</option>
-                  <option selected>Validated</option>
-                  <option value="Denied">Denied</option>
+                  <option>Validated</option>
+                  <option value="Denied" selected>Denied</option>
                   <option>Expired</option>
                 </select>
               </div>
             </div>
           </div>
-          <!-- Company denial reason — appears when Denied selected -->
-          <div class="form-row" id="co-denial-row" style="display:none;">
-            <div class="label-cell">Denial Reason <span class="req">*</span> <span class="help-q">?</span></div>
+
+          <!-- ══ NEW: Denial Reason — shown when Denied is selected ══ -->
+          <div class="form-row" id="co-denial-row">
+            <div class="label-cell">Denial Reason <span class="req">*</span> <span class="help-q" title="Required when status is Denied. Recorded on all affected loans.">?</span></div>
             <div class="value-cell">
-              <textarea style="width:420px; min-height:72px; border:1px solid var(--border); border-radius:3px; padding:8px; font-size:12px; font-family:inherit; resize:vertical;" placeholder="Describe why this builder is being denied company-wide…"></textarea>
-              <div style="font-size:11px; color:var(--slate); margin-top:3px;">Required. This reason will be recorded on all affected loans.</div>
+              <textarea style="width:380px; min-height:68px; border:1px solid var(--border); border-radius:3px; padding:7px 9px; font-size:12px; font-family:inherit; resize:vertical;" placeholder="Describe why this builder is being denied company-wide…"></textarea>
+              <div style="font-size:11px; color:var(--slate); margin-top:3px;">Required. Recorded on all affected loans' activity history.</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="label-cell">Max Construction<br>Credit</div>
+            <div class="value-cell"><input class="inline-input" style="width:90px; text-align:right;" value="$0.00"></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Taxpayer Identifier</div>
+            <div class="value-cell"><div class="inline-select-wrap" style="display:inline-block;"><select style="min-width:300px;"><option>Individual/Sole Proprietor or Single-member LLC</option></select></div></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">First Name</div>
+            <div class="value-cell">
+              <input class="inline-input" style="width:150px;" value="Joseph">
+              &nbsp;&nbsp;<span style="font-size:12px; color:var(--slate);">Middle</span>&nbsp;<input class="inline-input" style="width:60px;" value="">
             </div>
           </div>
           <div class="form-row">
-            <div class="label-cell">Max Construction Credit</div>
-            <div class="value-cell"><input class="inline-input" style="width:100px; text-align:right;" value="$0.00"></div>
+            <div class="label-cell">Last Name</div>
+            <div class="value-cell">
+              <input class="inline-input" style="width:150px;" value="GaetaTEST">
+              &nbsp;&nbsp;<span style="font-size:12px; color:var(--slate);">Suffix</span>&nbsp;<input class="inline-input" style="width:60px;" value="">
+            </div>
           </div>
           <div class="form-row">
-            <div class="label-cell">Vendor Performance Category <span class="help-q">?</span></div>
-            <div class="value-cell"><div class="inline-select-wrap" style="min-width:200px;"><select><option>Restricted</option><option>Standard</option><option>Monitored</option><option>Streamline</option></select></div></div>
+            <div class="label-cell">Work Phone <span class="req">*</span></div>
+            <div class="value-cell">
+              <input class="inline-input" style="width:150px;" value="(704) 555-5555">
+              &nbsp;<span style="font-size:12px; color:var(--slate);">Ext.</span>&nbsp;<input class="inline-input" style="width:60px;" value="">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Mobile Phone</div>
+            <div class="value-cell"><input class="inline-input" style="width:150px;" value=""></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Fax</div>
+            <div class="value-cell"><input class="inline-input" style="width:150px;" value=""></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Email</div>
+            <div class="value-cell"><input class="inline-input" style="width:240px;" value="ashley.gaeta@cardinalfinancial.com"></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Street (Line 1)</div>
+            <div class="value-cell"><input class="inline-input" style="width:240px;" value=""></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Street (Line 2)</div>
+            <div class="value-cell"><input class="inline-input" style="width:240px;" value=""></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">City</div>
+            <div class="value-cell"><input class="inline-input" style="width:150px;" value=""></div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">State &amp; Zip Code</div>
+            <div class="value-cell">
+              <div class="inline-select-wrap" style="display:inline-block;"><select style="min-width:70px;"><option>NV</option><option>AZ</option></select></div>
+              &nbsp;<input class="inline-input" style="width:90px;" value="">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="label-cell">Vendor Performance<br>Category <span class="help-q">?</span></div>
+            <div class="value-cell"><div class="inline-select-wrap" style="display:inline-block;"><select style="min-width:200px;"><option>Restricted</option><option>Standard</option><option>Monitored</option><option>Streamline</option></select></div></div>
+          </div>
+          <!-- Contractor Key Roles multi-select -->
+          <div class="form-row">
+            <div class="label-cell">Contractor Key<br>Roles <span class="help-q">?</span></div>
+            <div class="value-cell">
+              <div style="border:1px solid var(--border); border-radius:3px; background:#fff; width:200px; font-size:12px; padding:4px 0;">
+                <label style="display:flex; align-items:center; gap:8px; padding:5px 12px; cursor:pointer;"><input type="checkbox"> General Contractor</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:5px 12px; cursor:pointer;"><input type="checkbox"> Manufacturer</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:5px 12px; cursor:pointer;"><input type="checkbox" checked> Retailer</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:5px 12px; cursor:pointer;"><input type="checkbox"> Installer</label>
+                <label style="display:flex; align-items:center; gap:8px; padding:5px 12px; cursor:pointer;"><input type="checkbox"> Transporter</label>
+              </div>
+            </div>
           </div>
           <div class="form-row">
             <div class="label-cell">Has Employees <span class="help-q">?</span></div>
             <div class="value-cell"><div class="toggle-pair"><button onclick="tog(this)">Yes</button><button class="on" onclick="tog(this)">No</button></div></div>
           </div>
           <div class="form-row">
-            <div class="label-cell">Draw at Closing Preferred <span class="help-q">?</span></div>
+            <div class="label-cell">Draw at Closing<br>Preferred <span class="help-q">?</span></div>
             <div class="value-cell"><div class="toggle-pair"><button onclick="tog(this)">Yes</button><button class="on" onclick="tog(this)">No</button></div></div>
           </div>
-          <div class="form-row">
-            <div class="label-cell">First Name <span class="req">*</span></div>
-            <div class="value-cell">
-              <input class="inline-input" style="width:140px;" value="Joseph">
-              &nbsp;&nbsp;<span style="color:var(--slate);">Middle</span>&nbsp;<input class="inline-input" style="width:60px;" value="">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="label-cell">Last Name <span class="req">*</span></div>
-            <div class="value-cell">
-              <input class="inline-input" style="width:140px;" value="GaetaTEST">
-              &nbsp;&nbsp;<span style="color:var(--slate);">Suffix</span>&nbsp;<input class="inline-input" style="width:60px;" value="">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="label-cell">Work Phone <span class="req">*</span></div>
-            <div class="value-cell"><input class="inline-input" style="width:140px;" value="(704) 555-5555">&nbsp;<span style="color:var(--slate);">Ext.</span>&nbsp;<input class="inline-input" style="width:60px;" value=""></div>
-          </div>
-          <div class="form-row">
-            <div class="label-cell">Email</div>
-            <div class="value-cell"><input class="inline-input" style="width:260px;" value="ashley.gaeta@cardinalfinancial.com"></div>
-          </div>
-          <div class="form-row">
-            <div class="label-cell">State &amp; Zip Code</div>
-            <div class="value-cell"><div class="inline-select-wrap"><select><option>NV</option><option>AZ</option></select></div>&nbsp;<input class="inline-input" style="width:90px;" value=""></div>
-          </div>
         </div>
-        <div class="card-footer">
+
+        <!-- Footer -->
+        <div style="border-top:1px solid var(--divider); padding:12px 0; display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
           <button class="btn btn-outline">Cancel</button>
+          <button class="btn btn-outline">Delete Contractor</button>
           <button class="btn btn-primary" onclick="openModal('modal-co-deny')">Save</button>
         </div>
       </div>
@@ -917,13 +1024,24 @@ body { font-family: "Segoe UI", Helvetica Neue, Arial, sans-serif; font-size: 12
 <!-- ════════════════════════════════════════════
      S6 — Company-Wide Denial Modal (standalone)
 ═════════════════════════════════════════════════ -->
-<div id="s6" class="screen">
-  <div class="body-split" style="min-height:calc(100vh - 32px);">
-    <div class="left-nav">
-      <div class="ca-sidebar-hdr"><span style="color:var(--teal); font-weight:700;">◀</span> Contractor Admin</div>
-      <div class="left-nav-item active">Contractors</div>
+<div id="s6" class="screen" style="flex-direction:column;">
+  <div class="global-nav">
+    <div class="logo">🅾 <span>ctane</span></div>
+    <div class="nav-links">
+      <div class="nav-link">Support</div>
+      <div class="nav-link">Announcements</div>
+      <div class="nav-link">Notices <span class="notice-badge">0</span></div>
+      <div class="nav-link">Recent ▾</div>
     </div>
-    <div class="main-content" style="align-items:center; justify-content:center; position:relative;">
+    <div class="search-bar"><input class="search-input" placeholder="Loan Search"><button class="search-btn">🔍</button></div>
+    <div class="user-info">Ashley R. <span>Gaeta</span></div>
+  </div>
+  <div class="body-split" style="flex:1;">
+    <div class="left-nav" style="width:170px; min-width:170px;">
+      <div class="ca-sidebar-hdr" style="background:var(--teal); color:#fff; font-size:12px;"><span style="font-size:14px; margin-right:4px;">◀</span> CONTRACTOR ADMIN</div>
+      <div class="left-nav-item active" style="font-size:13px; padding:10px 16px;">Contractors</div>
+    </div>
+    <div class="main-content" style="background:#f0f2f4; align-items:center; justify-content:center; position:relative;">
       <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); z-index:1;"></div>
       <div class="modal-box" style="position:relative; z-index:2;">
         <div class="modal-hdr">Confirm Company-Wide Builder Denial <button class="x" onclick="show('s5')">×</button></div>
