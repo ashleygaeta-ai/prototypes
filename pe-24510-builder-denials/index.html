@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PE-24510 — Builder Denials Prototype</title>
+<style>
+  :root {
+    --sapphire: #0D2552;
+    --torque: #1296B0;
+    --blaze: #FBAF40;
+    --poppy: #F04E3E;
+    --slate: #58585B;
+    --offwhite: #F5F6F7;
+    --medgrey: #D4D9DB;
+    --body-bg: #e8eaed;
+    --navy: #1B3A4B;
+    --teal: #1296B0;
+    --light-teal: #D6E8EC;
+    --border: #C5CDD4;
+    --divider: #D8DDE3;
+    --sidebar-bg: #F5F7F9;
+    --help-icon: #8E9DAA;
+    --input-text: #333333;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Segoe UI", Helvetica Neue, Arial, sans-serif;
+    font-size: 13px;
+    background: var(--body-bg);
+    color: var(--slate);
+  }
+
+  /* ── PROTOTYPE NAV ──────────────────────────── */
+  #proto-nav {
+    background: var(--sapphire);
+    color: #fff;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  #proto-nav span { color: #aac4d4; margin-right: 4px; }
+  #proto-nav button {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 3px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 0.15s;
+  }
+  #proto-nav button:hover, #proto-nav button.active {
+    background: var(--torque);
+    border-color: var(--torque);
+  }
+
+  /* ── SCREEN WRAPPER ─────────────────────────── */
+  .screen { display: none; }
+  .screen.active { display: flex; min-height: calc(100vh - 35px); }
+
+  /* ── SIDEBAR ────────────────────────────────── */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-header {
+    background: var(--light-teal);
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sidebar-header .back-arrow { color: var(--teal); font-size: 14px; cursor: pointer; }
+  .sidebar-nav-item {
+    padding: 10px 14px 10px 18px;
+    font-size: 13px;
+    color: var(--slate);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-nav-item.active {
+    color: var(--teal);
+    font-weight: 700;
+    border-left-color: var(--teal);
+    background: #fff;
+  }
+
+  /* ── MAIN CONTENT ───────────────────────────── */
+  .main {
+    flex: 1;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+  .breadcrumb {
+    padding: 16px 24px 8px;
+    font-size: 15px;
+  }
+  .breadcrumb a { color: var(--teal); text-decoration: none; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { color: #6B7C8A; margin: 0 6px; }
+  .breadcrumb .current { color: var(--navy); }
+
+  /* ── TABS ───────────────────────────────────── */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider);
+    padding: 0 24px;
+  }
+  .tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--navy);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab.active { font-weight: 700; border-bottom-color: var(--teal); }
+  .tab + .tab { border-left: 1px solid var(--divider); }
+
+  /* ── FORM ───────────────────────────────────── */
+  .form-area {
+    padding: 20px 40px;
+    flex: 1;
+  }
+  .form-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    gap: 14px;
+  }
+  .form-label {
+    width: 200px;
+    min-width: 200px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    padding-top: 7px;
+    line-height: 1.4;
+  }
+  .form-label .req { color: var(--poppy); }
+  .help-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background: var(--help-icon);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 9px;
+    text-align: center;
+    line-height: 14px;
+    margin-left: 4px;
+    cursor: help;
+    vertical-align: middle;
+  }
+  .form-input {
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 10px;
+    font-size: 13px;
+    color: var(--input-text);
+    background: #fff;
+    width: 250px;
+  }
+  .form-input:focus { outline: none; border-color: var(--teal); }
+  .form-input.wide { width: 420px; }
+  .form-input.small { width: 80px; }
+  .form-select-wrap {
+    position: relative;
+    width: 250px;
+    height: 34px;
+  }
+  .form-select-wrap.wide { width: 420px; }
+  .form-select-wrap select {
+    width: 100%;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 44px 0 10px;
+    font-size: 13px;
+    color: var(--input-text);
+    background: #fff;
+    appearance: none;
+    cursor: pointer;
+  }
+  .form-select-wrap::after {
+    content: "▼";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 34px;
+    background: var(--teal);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border-radius: 0 3px 3px 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 2px;
+  }
+  .form-select-wrap select:focus { outline: none; border-color: var(--teal); }
+
+  /* Toggle Yes/No */
+  .toggle-pair { display: flex; }
+  .toggle-pair button {
+    width: 50px;
+    height: 34px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-pair button:first-child { border-radius: 3px 0 0 3px; }
+  .toggle-pair button:last-child { border-radius: 0 3px 3px 0; border-left: none; }
+  .toggle-pair button.on { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 700; }
+
+  /* ── CONTRACTOR LIST TABLE ──────────────────── */
+  .table-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sapphire);
+  }
+  .btn-primary {
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 7px 16px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn-primary:hover { background: #0f7d96; }
+  .btn-danger {
+    background: var(--poppy);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 7px 16px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn-danger:hover { background: #c93d2f; }
+  .btn-secondary {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 7px 16px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: #565e65; }
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--teal);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .btn-link:hover { text-decoration: underline; }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table.data-table th {
+    background: var(--offwhite);
+    color: var(--sapphire);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--medgrey);
+    text-align: left;
+  }
+  table.data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--divider);
+    color: var(--input-text);
+    vertical-align: middle;
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:hover td { background: #f0f8fa; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .badge-validated { background: #d4edda; color: #155724; }
+  .badge-pending { background: #fff3cd; color: #856404; }
+  .badge-denied { background: #f8d7da; color: #721c24; }
+  .badge-loan-denied { background: #f8d7da; color: #721c24; }
+  .badge-active { background: #d4edda; color: #155724; }
+  .badge-inactive { background: #e2e3e5; color: #383d41; }
+
+  /* ── FOOTER ─────────────────────────────────── */
+  .footer-bar {
+    border-top: 1px solid var(--divider);
+    padding: 12px 24px;
+    display: flex;
+    gap: 10px;
+    background: var(--offwhite);
+  }
+
+  /* ── MODAL ───────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 4px;
+    width: 520px;
+    max-width: 95vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .modal-header {
+    background: var(--sapphire);
+    color: #fff;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header .modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .modal-body { padding: 20px; }
+  .modal-footer {
+    padding: 14px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid var(--divider);
+    background: var(--offwhite);
+  }
+  .warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #664d03;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .warning-box .warn-icon { font-size: 16px; flex-shrink: 0; }
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .modal-field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--input-text);
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+  }
+  .modal-field textarea:focus { outline: none; border-color: var(--teal); }
+  .modal-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .modal-info-row .label { color: var(--slate); }
+  .modal-info-row .value { font-weight: 600; color: var(--navy); }
+
+  /* denied row highlight */
+  tr.denied-row td { background: #fff5f5 !important; }
+
+  /* denial reason display in table */
+  .denial-note {
+    font-size: 11px;
+    color: #721c24;
+    margin-top: 3px;
+  }
+
+  /* ── PILL STATUS in contractor admin ─────────── */
+  .status-changed {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 3px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #721c24;
+    margin-top: 10px;
+  }
+
+  .info-text {
+    font-size: 12px;
+    color: var(--slate);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .affected-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--poppy);
+  }
+</style>
+</head>
+<body>
+
+<!-- ── PROTOTYPE NAV ───────────────────────────────────── -->
+<div id="proto-nav">
+  <span>📐 PE-24510 Prototype</span>
+  <button class="active" onclick="showScreen('screen-contractors-list')">1 · Contractors List (Loan)</button>
+  <button onclick="showScreen('screen-contractor-detail')">2 · Contractor Detail (Loan)</button>
+  <button onclick="showScreen('screen-deny-modal')">3 · Deny for This Loan Modal</button>
+  <button onclick="showScreen('screen-denied-state')">4 · After Loan Denial</button>
+  <button onclick="showScreen('screen-contractor-admin')">5 · Contractor Admin (Company-Wide)</button>
+  <button onclick="showScreen('screen-company-deny-modal')">6 · Company-Wide Denial Modal</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 1 — Construction > Contractors List (on loan)
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-contractors-list" class="screen active">
+  <div class="sidebar">
+    <div class="sidebar-header"><span class="back-arrow">‹</span> Construction</div>
+    <div class="sidebar-nav-item">Draw Summary</div>
+    <div class="sidebar-nav-item">Draws</div>
+    <div class="sidebar-nav-item active">Contractors</div>
+    <div class="sidebar-nav-item">Costs</div>
+    <div class="sidebar-nav-item">Loan Details</div>
+    <div class="sidebar-nav-item">Subsidy</div>
+  </div>
+  <div class="main">
+    <div class="breadcrumb">
+      <a>Construction</a><span class="sep">›</span><span class="current">Contractors</span>
+    </div>
+    <div class="table-header-bar">
+      <span class="section-title">CONTRACTORS</span>
+      <button class="btn-primary">Add Contractor</button>
+    </div>
+    <div style="padding: 0 24px 24px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Contractor</th>
+            <th>License Type</th>
+            <th>Regulator</th>
+            <th>Validation Status</th>
+            <th>Primary</th>
+            <th>Active</th>
+            <th>Loan Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a class="btn-link" onclick="showScreen('screen-contractor-detail')">Yoder's Straightline Construction — John Yoder</a></td>
+            <td>General Contractor</td>
+            <td>MI</td>
+            <td><span class="badge badge-validated">Validated</span></td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><button class="btn-link" onclick="showScreen('screen-contractor-detail')">Edit</button></td>
+          </tr>
+          <tr>
+            <td>Cardinal Build Co — James Cardinal</td>
+            <td>General Contractor</td>
+            <td>MI</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><button class="btn-link">Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 2 — Contractor Detail on Loan
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-contractor-detail" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-header"><span class="back-arrow">‹</span> Construction</div>
+    <div class="sidebar-nav-item">Draw Summary</div>
+    <div class="sidebar-nav-item">Draws</div>
+    <div class="sidebar-nav-item active">Contractors</div>
+    <div class="sidebar-nav-item">Costs</div>
+    <div class="sidebar-nav-item">Loan Details</div>
+    <div class="sidebar-nav-item">Subsidy</div>
+  </div>
+  <div class="main">
+    <div class="breadcrumb">
+      <a onclick="showScreen('screen-contractors-list')">Contractors</a>
+      <span class="sep">›</span>
+      <span class="current">Yoder's Straightline Construction — John Yoder</span>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Contractor Details</div>
+    </div>
+    <div class="form-area">
+
+      <div class="form-row">
+        <div class="form-label">Contractor<span class="req">*</span></div>
+        <div class="form-select-wrap">
+          <select><option>Yoder's Straightline Construction — John Yoder</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">License Type<span class="req">*</span></div>
+        <div class="form-select-wrap">
+          <select><option>General Contractor</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Regulator<span class="req">*</span> <span class="help-icon">?</span></div>
+        <div class="form-select-wrap">
+          <select><option>Michigan (MI)</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Primary <span class="help-icon">?</span></div>
+        <div class="toggle-pair">
+          <button class="on" onclick="toggleBtn(this)">Yes</button>
+          <button onclick="toggleBtn(this)">No</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Active <span class="help-icon">?</span></div>
+        <div class="toggle-pair">
+          <button class="on" onclick="toggleBtn(this)">Yes</button>
+          <button onclick="toggleBtn(this)">No</button>
+        </div>
+      </div>
+
+      <!-- NEW FIELD: Loan Denial Status -->
+      <div style="margin: 20px 0; border-top: 1px solid var(--divider); padding-top: 20px;">
+        <div style="background: var(--offwhite); padding: 8px 12px; font-size: 11px; font-weight: 700; color: var(--sapphire); margin-bottom: 14px;">LOAN-LEVEL DENIAL</div>
+        <div class="form-row">
+          <div class="form-label">Loan Denial Status <span class="help-icon">?</span></div>
+          <div class="form-select-wrap">
+            <select id="loan-denial-select" onchange="handleDenialStatusChange(this)">
+              <option value="none">None</option>
+              <option value="denied">Denied for this Loan</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" id="denial-reason-row" style="display:none;">
+          <div class="form-label">Denial Reason <span class="req">*</span> <span class="help-icon">?</span></div>
+          <div>
+            <textarea class="form-input" style="width:420px; height:80px; padding:8px 10px; font-size:13px; font-family:inherit; resize:vertical;" placeholder="Enter the reason this builder is being denied for this loan…"></textarea>
+            <div style="font-size:11px; color:var(--slate); margin-top:4px;">This reason will be recorded in the loan activity history.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bar">
+      <button class="btn-primary">Save</button>
+      <button class="btn-secondary" onclick="showScreen('screen-contractors-list')">Cancel</button>
+      <button class="btn-danger" onclick="showModal('modal-deny')">Deny for this Loan</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 3 — "Deny for this Loan" Modal (standalone view)
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-deny-modal" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-header"><span class="back-arrow">‹</span> Construction</div>
+    <div class="sidebar-nav-item active">Contractors</div>
+  </div>
+  <div class="main" style="position:relative; align-items:center; justify-content:center; background:rgba(0,0,0,0.1);">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.35);"></div>
+    <div class="modal-box" style="position:relative; z-index:10;">
+      <div class="modal-header">
+        Deny Builder for this Loan
+        <button class="modal-close" onclick="showScreen('screen-contractor-detail')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span class="label">Builder</span>
+          <span class="value">Yoder's Straightline Construction — John Yoder</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="label">Company-Wide Status</span>
+          <span class="value"><span class="badge badge-validated">Validated</span> — will not be changed</span>
+        </div>
+        <div class="warning-box">
+          <span class="warn-icon">⚠️</span>
+          <div>Denying this builder <strong>for this loan only</strong> will set them to inactive on this loan and automatically mark all associated builder documents as Not Required. Their company-wide Validated status will remain unchanged.</div>
+        </div>
+        <div class="modal-field">
+          <label>Denial Reason <span style="color:var(--poppy)">*</span></label>
+          <textarea id="deny-reason" placeholder="Enter the reason this builder is being denied for this loan…"></textarea>
+          <div style="font-size:11px; color:var(--slate); margin-top:4px;">Required. This reason will be recorded in the loan activity history.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="showScreen('screen-contractor-detail')">Cancel</button>
+        <button class="btn-danger" onclick="confirmLoanDenial()">Confirm Denial</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 4 — After Loan Denial (Contractors List)
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-denied-state" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-header"><span class="back-arrow">‹</span> Construction</div>
+    <div class="sidebar-nav-item">Draw Summary</div>
+    <div class="sidebar-nav-item">Draws</div>
+    <div class="sidebar-nav-item active">Contractors</div>
+    <div class="sidebar-nav-item">Costs</div>
+    <div class="sidebar-nav-item">Loan Details</div>
+    <div class="sidebar-nav-item">Subsidy</div>
+  </div>
+  <div class="main">
+    <div class="breadcrumb">
+      <a>Construction</a><span class="sep">›</span><span class="current">Contractors</span>
+    </div>
+    <div class="table-header-bar">
+      <span class="section-title">CONTRACTORS</span>
+      <button class="btn-primary">Add Contractor</button>
+    </div>
+    <div style="padding: 0 24px 24px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Contractor</th>
+            <th>License Type</th>
+            <th>Regulator</th>
+            <th>Validation Status</th>
+            <th>Primary</th>
+            <th>Active</th>
+            <th>Loan Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="denied-row">
+            <td>
+              <a class="btn-link">Yoder's Straightline Construction — John Yoder</a>
+              <div class="denial-note">⛔ Denied for this loan — 3/13/2026: Builder failed project eligibility review; conflict of interest identified with appraisal.</div>
+            </td>
+            <td>General Contractor</td>
+            <td>MI</td>
+            <td><span class="badge badge-validated">Validated</span></td>
+            <td>No</td>
+            <td>No</td>
+            <td><span class="badge badge-loan-denied">Denied (Loan)</span></td>
+            <td><button class="btn-link">View</button></td>
+          </tr>
+          <tr>
+            <td>Cardinal Build Co — James Cardinal</td>
+            <td>General Contractor</td>
+            <td>MI</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>—</td>
+            <td><button class="btn-link">Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:14px; padding:12px 14px; background:#fff3cd; border:1px solid #ffc107; border-radius:3px; font-size:12px; color:#664d03;">
+        ⚠️ <strong>Yoder's Straightline Construction</strong> has been denied for this loan. All associated builder documents have been set to Not Required. Their company-wide Validated status was not changed.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 5 — Contractor Admin (Company-Wide Denial)
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-contractor-admin" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-header"><span class="back-arrow">‹</span> Contractor Admin</div>
+    <div class="sidebar-nav-item active">Contractors</div>
+  </div>
+  <div class="main">
+    <div class="breadcrumb">
+      <a>Contractors</a>
+      <span class="sep">›</span>
+      <span class="current">Yoder's Straightline Construction — John Yoder</span>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Contractor</div>
+      <div class="tab">Licenses</div>
+      <div class="tab">Files</div>
+      <div class="tab">Notes</div>
+    </div>
+    <div class="form-area">
+
+      <div class="form-row">
+        <div class="form-label">Contractor Company Name <span class="req">*</span></div>
+        <input class="form-input" type="text" value="Yoder's Straightline Construction">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Verified <span class="req">*</span> <span class="help-icon">?</span></div>
+        <div class="toggle-pair">
+          <button class="on" onclick="toggleBtn(this)">Yes</button>
+          <button onclick="toggleBtn(this)">No</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Validation Status <span class="req">*</span> <span class="help-icon">?</span></div>
+        <div class="form-select-wrap">
+          <select id="company-validation-status" onchange="handleCompanyDenial(this)">
+            <option value="pending">Pending</option>
+            <option value="validated" selected>Validated</option>
+            <option value="denied">Denied</option>
+            <option value="expired">Expired</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Denial reason — shows only when Denied is selected -->
+      <div id="company-denial-reason-row" class="form-row" style="display:none;">
+        <div class="form-label">Denial Reason <span class="req">*</span> <span class="help-icon">?</span></div>
+        <div>
+          <textarea class="form-input" style="width:420px; height:80px; padding:8px 10px; font-size:13px; font-family:inherit; resize:vertical;" placeholder="Enter the reason this builder is being denied company-wide…"></textarea>
+          <div style="font-size:11px; color:var(--slate); margin-top:4px;">Required when setting status to Denied. This reason will be recorded on all affected loans.</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-label">Max Construction Credit</div>
+        <input class="form-input small" type="text" value="$0.00" style="text-align:right;">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Vendor Performance Category <span class="help-icon">?</span></div>
+        <div class="form-select-wrap wide">
+          <select><option>Standard</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Has Employees <span class="help-icon">?</span></div>
+        <div class="toggle-pair">
+          <button onclick="toggleBtn(this)">Yes</button>
+          <button class="on" onclick="toggleBtn(this)">No</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">Draw at Closing Preferred <span class="help-icon">?</span></div>
+        <div class="toggle-pair">
+          <button onclick="toggleBtn(this)">Yes</button>
+          <button class="on" onclick="toggleBtn(this)">No</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bar">
+      <button class="btn-primary" onclick="showModal('modal-company-deny')">Save</button>
+      <button class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN 6 — Company-Wide Denial Modal (standalone view)
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-company-deny-modal" class="screen">
+  <div class="sidebar">
+    <div class="sidebar-header"><span class="back-arrow">‹</span> Contractor Admin</div>
+    <div class="sidebar-nav-item active">Contractors</div>
+  </div>
+  <div class="main" style="position:relative; align-items:center; justify-content:center;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.35);"></div>
+    <div class="modal-box" style="position:relative; z-index:10;">
+      <div class="modal-header">
+        Confirm Company-Wide Builder Denial
+        <button class="modal-close" onclick="showScreen('screen-contractor-admin')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span class="label">Builder</span>
+          <span class="value">Yoder's Straightline Construction — John Yoder</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="label">New Status</span>
+          <span class="value"><span class="badge badge-denied">Denied</span></span>
+        </div>
+        <div class="warning-box">
+          <span class="warn-icon">⚠️</span>
+          <div>
+            This builder is currently associated with <span class="affected-count">7 active loans</span>. Setting the validation status to <strong>Denied</strong> will:
+            <ul style="margin-top:6px; padding-left:16px; line-height:1.8;">
+              <li>Mark this builder as inactive on all 7 affected loans</li>
+              <li>Automatically set all associated builder documents to Not Required on each loan</li>
+              <li>Record a denial note on each affected loan's activity history</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>Denial Reason <span style="color:var(--poppy)">*</span></label>
+          <textarea placeholder="Enter the reason this builder is being denied company-wide…"></textarea>
+          <div style="font-size:11px; color:var(--slate); margin-top:4px;">Required. This reason will be recorded on all affected loans.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="showScreen('screen-contractor-admin')">Cancel</button>
+        <button class="btn-danger">Confirm Denial — 7 Loans</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     INLINE MODAL — Deny for this Loan (triggered from screen 2)
+═══════════════════════════════════════════════════════════ -->
+<div id="modal-deny" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      Deny Builder for this Loan
+      <button class="modal-close" onclick="closeModal('modal-deny')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info-row">
+        <span class="label">Builder</span>
+        <span class="value">Yoder's Straightline Construction — John Yoder</span>
+      </div>
+      <div class="modal-info-row">
+        <span class="label">Company-Wide Status</span>
+        <span class="value"><span class="badge badge-validated">Validated</span> — will not be changed</span>
+      </div>
+      <div class="warning-box">
+        <span class="warn-icon">⚠️</span>
+        <div>Denying this builder <strong>for this loan only</strong> will set them to inactive on this loan and automatically mark all associated builder documents as Not Required. Their company-wide Validated status will remain unchanged.</div>
+      </div>
+      <div class="modal-field">
+        <label>Denial Reason <span style="color:var(--poppy)">*</span></label>
+        <textarea placeholder="Enter the reason this builder is being denied for this loan…"></textarea>
+        <div style="font-size:11px; color:var(--slate); margin-top:4px;">Required. This reason will be recorded in the loan activity history.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-deny')">Cancel</button>
+      <button class="btn-danger" onclick="closeModal('modal-deny'); showScreen('screen-denied-state')">Confirm Denial</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    // update proto nav active state
+    document.querySelectorAll('#proto-nav button').forEach(b => b.classList.remove('active'));
+    const idx = {
+      'screen-contractors-list': 0,
+      'screen-contractor-detail': 1,
+      'screen-deny-modal': 2,
+      'screen-denied-state': 3,
+      'screen-contractor-admin': 4,
+      'screen-company-deny-modal': 5
+    };
+    const btns = document.querySelectorAll('#proto-nav button');
+    if (btns[idx[id]]) btns[idx[id]].classList.add('active');
+  }
+
+  function showModal(id) {
+    document.getElementById(id).classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function confirmLoanDenial() {
+    closeModal('modal-deny');
+    showScreen('screen-denied-state');
+  }
+
+  function toggleBtn(btn) {
+    const pair = btn.parentElement;
+    pair.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function handleDenialStatusChange(select) {
+    const row = document.getElementById('denial-reason-row');
+    row.style.display = select.value === 'denied' ? 'flex' : 'none';
+  }
+
+  function handleCompanyDenial(select) {
+    const row = document.getElementById('company-denial-reason-row');
+    row.style.display = select.value === 'denied' ? 'flex' : 'none';
+    if (select.value === 'denied') {
+      // will trigger modal on Save
+    }
+  }
+</script>
+</body>
+</html>
